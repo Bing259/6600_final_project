@@ -25,15 +25,15 @@ Social media platforms have become central spaces for public discussion. They ho
 
 To study this challenge, our work focuses on distinguishing implicit hate from non hate content. We use the *Latent Hatred dataset* created by ElSherief et al in 2021 @elsherief-etal-2021-latent. This dataset was released at EMNLP 2021 and is one of the first benchmarks designed specifically for understanding implicit hate. It contains three main categories: *not hate*, *implicit hate*, and *explicit hate*. The *not hate* class has 13,270 samples, the *implicit hate* class has 7,094 samples, and the *explicit hate* has 1,086 samples. Since the *explicit hate* category is relatively small and existing methods can already identify it effectively, this project focuses only on the *not hate* and *implicit hate* data. The dataset includes many examples where hate is conveyed through implication rather than direct insults. This allows us to examine how well different models handle subtle and context dependent expressions.
 
-The goal of this project is to evaluate how modern deep learning models and traditional models perform on this difficult task. We begin by focusing on two types of neural models. The first is a bidirectional LSTM, which processes text as a sequence and learns patterns based on word order. The second is BERT, a transformer-based model that captures contextual relations between all words in a sentence. We also compare both models with a Naive Bayes model to illustrate the gap between simple bag-of-words-based methods and contextual models. 
+The goal of this project is to evaluate how both traditional and modern deep learning models perform on this challenging task. We begin with Naive Bayes as our baseline model, which relies on simple bag-of-words features. We then move to two neural models with increasing representational power: a bidirectional LSTM, which captures sequential patterns in text, and BERT, a transformer-based contextual model that learns deep semantic relationships across the entire sentence. Comparing these three models allows us to understand how much additional linguistic capability is needed to effectively detect implicit hate.
 
 Another important aspect of our study is the strong class imbalance in the dataset. Implicit hate is less frequent than non hate. Models trained on the raw data tend to favor the majority class and often fail to identify implicit hate. To address this issue, we use class weighting and downsampling. We test these methods with both LSTM and BERT to understand how each model responds to imbalance correction.
 
 Overall, this project aims to answer three questions:
 
+- How much improvement can be obtained through simple methods for handling class imbalance?
+- Do transformer-based models like BERT offer an advantage over sequence models like LSTM?
 - Can neural models detect implicit hate better than traditional baselines?
-- Do contextual models like BERT offer an advantage over sequence models like LSTM?
-- How much improvement can be obtained through simple methods for handling class imbalance? 
 
 The results help highlight both the progress in hate speech detection and the remaining challenges in identifying subtle implicit forms of abuse.
 
@@ -99,7 +99,7 @@ Each post is transformed into a weighted representation using TF-IDF. The featur
 
 A multinomial Naive Bayes classifier is trained on the TF IDF vectors. For each class, the model estimates how likely each token pattern is to appear. These likelihoods, along with the class prior, form the basis of the prediction rule. This approach is efficient and interpretable, though limited in its ability to capture deeper semantic context.
 
-### 5. Evaluation
+### 4. Evaluation
 
 After training, the model predicts labels on the test set. We compute precision, recall, F1 score, and the confusion matrix. These results form the baseline for comparing the performance of the LSTM and BERT models.
 
@@ -495,3 +495,11 @@ Under this criterion, BERT achieves the strongest overall performance. It strike
 The Naive Bayes and BiLSTM models show a different pattern. Both models achieve higher recall on the implicit hate class, meaning they label more samples as hate. However, this comes with lower precision and more false positives. Their decision boundaries are more aggressive, and although this raises recall, the overall F1 score remains below BERT. These results highlight the limits of models that rely heavily on surface lexical features or sequential patterns without deeper contextual grounding.
 
 Overall, the comparison shows that implicit hate detection requires models that can go beyond keyword matching and simple context windows. Pretrained language models are better suited for understanding subtle meaning shifts and indirect expressions. At the same time, handling class imbalance is critical for all models. Future work may explore data augmentation for implicit hate, contrastive learning objectives, or multi task setups that incorporate stance or sentiment as auxiliary signals. These extensions may help models capture even finer forms of indirect hostility and improve reliability in real social media environments.
+
+# 7. Future Works
+
+One interesting observation in our results is that Naive Bayes performed much better than we initially expected. We believe this is because the dataset consists mainly of short tweets—typically under 50 tokens. For short text, much of the signal that distinguishes implicit hate comes directly from specific lexical or phrasal cues. As a result, TF-IDF features become surprisingly effective, and Naive Bayes can capture these patterns with very simple decision boundaries.
+
+In contrast, BERT’s contextual advantage is less visible here. Transformers excel when either (1) inputs contain richer semantic structure, or (2) large training datasets allow the model to generalize subtle contextual distinctions. In our case, the dataset is relatively small, and the posts themselves are very short, which limits the amount of contextual information BERT can meaningfully extract. This also increases the risk of overfitting. We observed this directly during training: both the BiLSTM and BERT models converged within the first two to three epochs, suggesting that the available data does not provide enough complexity or volume for these models to fully utilize their representational capacity.
+
+For future work, a promising direction is to explore setups that allow contextual models to better leverage their strengths—such as using longer posts. It may help models capture the subtle meaning in implicit hate more effectively.
